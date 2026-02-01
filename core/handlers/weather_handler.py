@@ -2,7 +2,7 @@ from aiogram import Router , F
 from aiogram.types import Message , CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from core.keyboards.weather_kb import weather_kb
+from core.keyboards.weather_kb import location_kb, weather_kb
 from core.states import WeatherStates
 from core.services.weather_api import *
 from core.states import WeatherStates
@@ -59,3 +59,21 @@ async def city_weather_callback(cb: CallbackQuery , state: FSMContext):
         await msg.answer(
             f"الطقس الحالي في {city_name}:\n{weather_data}", reply_markup=weather_kb())
         await state.clear()
+
+
+@router.callback_query(F.data == 'my_location_weather')
+async def my_location_weather_callback(cb: CallbackQuery , state: FSMContext):
+    await cb.message.answer("الرجاء الضغط على زر إرسال موقعي الحالي:", reply_markup=location_kb())
+    await state.set_state(WeatherStates.waiting_location)
+@router.message(WeatherStates.waiting_location, F.location)
+async def location_handler(msg: Message , state: FSMContext):
+    latitude = msg.location.latitude
+    longitude = msg.location.longitude
+    weather_data = get_weather_lat_lon(latitude, longitude)
+    if not weather_data:
+        await msg.answer("عذراً، لم أتمكن من جلب بيانات الطقس. يرجى المحاولة مرة أخرى.")
+        return
+    await msg.answer(
+        f"الطقس الحالي في موقعك:\n{weather_data}", reply_markup=weather_kb())
+    await state.clear()
+

@@ -32,3 +32,9 @@ async def main_menu_callback(cb: CallbackQuery, state: FSMContext):
 @router.message(F.text == "/help")
 async def cmd_help(msg: Message):
     await msg.answer("مرحباً ! 👋\n\nالمساعدة: يمكنك استخدام الأوامر التالية:\n/start - لبدء التشغيل\n/help - للحصول على المساعدة")
+
+@router.message(F.text == "/about")
+async def cmd_about(msg: Message):
+    await msg.answer("هذا بوت طقس بسيط يستخدم API خارجي لجلب بيانات الطقس بناءً على إحداثيات GPS أو اسم المدينة.")
+
+

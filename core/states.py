@@ -7,3 +7,5 @@ class WeatherStates(StatesGroup):
 
     waiting_lat = State()
     waiting_lon = State()
+
+    waiting_city = State()

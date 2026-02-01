@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 
 from core.keyboards.weather_kb import weather_kb
 from core.states import WeatherStates
-from core.services.weather_api import get_weather_lat_lon
+from core.services.weather_api import *
 from core.states import WeatherStates
 
 router = Router()
@@ -20,8 +20,6 @@ async def weather_callback(cb: CallbackQuery , state: FSMContext):
 async def current_weather_callback(cb: CallbackQuery , state: FSMContext):
     await cb.message.answer("الرجاء إرسال دائرة العرض (Latitude):")
     await state.set_state(WeatherStates.waiting_lat)
-
-    
     
 @router.message(WeatherStates.waiting_lat)
 async def waiting_lat_handler(msg: Message , state: FSMContext):
@@ -41,3 +39,23 @@ async def waiting_lon_handler(msg: Message , state: FSMContext):
     await msg.answer(
         f"الطقس الحالي:\n{weather_data}", reply_markup=weather_kb())
     await state.clear()
+
+
+@router.callback_query(F.data == 'city_weather')
+async def city_weather_callback(cb: CallbackQuery , state: FSMContext):
+    await cb.message.answer("الرجاء إرسال اسم المدينة:")
+    await state.set_state(WeatherStates.waiting_city)
+    @router.message(WeatherStates.waiting_city)
+    async def waiting_city_handler(msg: Message , state: FSMContext):
+        city_name = msg.text
+        lat , lon = get_weather_city(city_name)
+        if not lat or not lon:
+            await msg.answer("عذراً، لم أتمكن من العثور على المدينة. يرجى التحقق من الاسم والمحاولة مرة أخرى.")
+            return
+        weather_data = get_weather_lat_lon(lat, lon)
+        if not weather_data:
+            await msg.answer("عذراً، لم أتمكن من جلب بيانات الطقس. يرجى المحاولة مرة أخرى.")
+            return
+        await msg.answer(
+            f"الطقس الحالي في {city_name}:\n{weather_data}", reply_markup=weather_kb())
+        await state.clear()

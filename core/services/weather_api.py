@@ -13,7 +13,7 @@ def get_weather_lat_lon(lat: float, lon: float):
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
-        print(data)
+        
         main = data.get('main',{})
         country = data.get('sys',{}).get('country','Unknown')
         main_temp = f"Temp: {main.get('temp')}\nMax Temp: {main.get('temp_max')}\nMin Temp: {main.get('temp_min')}\nHumidity: {main.get('humidity')}\nPressure: {main.get('pressure')}"
